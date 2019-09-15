@@ -6,10 +6,12 @@ services:
     volumes:
       - ./web:/usr/src/app
     ports:
-      - "5000:5000"
+      - "5004:5000"
     links:
       - db
   db:
     build: ./db
     volumes:
       - /vol/test/mongodb:/data/db
+    ports:
+      - "5005:27017"

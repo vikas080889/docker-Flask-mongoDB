@@ -26,7 +26,7 @@ class MidCaps(Resource):
             "stocks": mid_stocks
         }
         return jsonify(ret_map)
-
+# Informatic of Indvidual stock
 class StockInfo(Resource):
     def post(self):
         posted_data = request.get_json()
@@ -38,18 +38,21 @@ class StockInfo(Resource):
 class QualityFilter(Resource):
     def post(self):
         posted_data = request.get_json()
-        quality_1 = posted_data['quality_1']
-        quality_2 = posted_data['quality_2']
+        segment = posted_data['segment']
+        quality = posted_data['quality']
+        # Filtered stocks with quality
         stocks = dumps(db.mojoanalysis.aggregate(
         [
-        { "$match": { "$or": [ { "quality": quality_1},
-        { "quality": quality_2} ] } } ])
+        { "$match": { "$and": [ { "market_cap": segment},
+        { "quality": quality} ] } } ])
         )
         stocks = json.loads(stocks)
+        # count of filtered stocks with quality
         count = dumps(db.mojoanalysis.aggregate(
         [
-        { "$match": 
-        { "$or": [ { "quality": quality_1 }, { "quality": quality_2} ] } },
+        { "$match":
+        #instead of $and $or can be used according to scenarios
+        { "$and": [ { "market_cap": segment }, { "quality": quality} ] } },
         { "$group": { "_id": None, "count": { "$sum": 1 } } }])
         )
         count = json.loads(count)
@@ -58,11 +61,25 @@ class QualityFilter(Resource):
                 "detailed":stocks
         }
         return jsonify(ret_map)
+# Get selected fields from filtered stocks
+class QualityFilterSelectedField(Resource):
+      def post(self):
+          posted_data = request.get_json()
+          segment = posted_data['segment']
+          quality = posted_data['quality']
+          stocks = dumps(db.mojoanalysis.aggregate( [{ "$match": { "$and":
+                [ { "market_cap": segment }, { "quality": quality}]}},
+                { "$project" :
+                 { "_id": 1,"valuation":1,"quality":1,"URL":1,"market_cap":1} }
+                 ]))
+          stocks = json.loads(stocks)
+          return stocks
 
 api.add_resource(TotalStocks, "/total")
 api.add_resource(MidCaps, "/mid_caps")
 api.add_resource(StockInfo,"/stock_info")
 api.add_resource(QualityFilter,"/quality_filter")
+api.add_resource(QualityFilterSelectedField,"/quality_filter_selected")
 
 if __name__=="__main__":
     app.run(host="0.0.0.0", debug=True)
