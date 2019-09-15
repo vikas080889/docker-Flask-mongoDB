@@ -40,16 +40,24 @@ class QualityFilter(Resource):
         posted_data = request.get_json()
         quality_1 = posted_data['quality_1']
         quality_2 = posted_data['quality_2']
-        stocks = dumps(db.mojoanalysis.aggregate( [{ "$match": { "$or": [ { "quality": quality_1}, { "quality": quality_2} ] } } ]))
+        stocks = dumps(db.mojoanalysis.aggregate(
+        [
+        { "$match": { "$or": [ { "quality": quality_1},
+        { "quality": quality_2} ] } } ])
+        )
         stocks = json.loads(stocks)
-        count = dumps(db.mojoanalysis.aggregate( [{ "$match": { "$or": [ { "quality": quality_1 }, { "quality": quality_2} ] } },
-                                                { "$group": { "_id": None, "count": { "$sum": 1 } } }]))
+        count = dumps(db.mojoanalysis.aggregate(
+        [
+        { "$match": 
+        { "$or": [ { "quality": quality_1 }, { "quality": quality_2} ] } },
+        { "$group": { "_id": None, "count": { "$sum": 1 } } }])
+        )
         count = json.loads(count)
         ret_map = {
                 "total":count,
                 "detailed":stocks
         }
-        return jsonify(ret_map)        
+        return jsonify(ret_map)
 
 api.add_resource(TotalStocks, "/total")
 api.add_resource(MidCaps, "/mid_caps")
