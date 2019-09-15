@@ -49,8 +49,7 @@ class QualityFilter(Resource):
                 "total":count,
                 "detailed":stocks
         }
-        return jsonify(ret_map)
-        
+        return jsonify(ret_map)        
 
 api.add_resource(TotalStocks, "/total")
 api.add_resource(MidCaps, "/mid_caps")
