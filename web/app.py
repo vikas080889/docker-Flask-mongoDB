@@ -93,7 +93,8 @@ class BSESustainedProfitGain(Resource):
         stocks = dumps(db2.stockreposts.aggregate([{"$match":
         {"$and" :[{"$expr":{"$gt":["$q1_profit", "$q2_profit"]}},
         {"$expr":{"$gt":["$q2_profit", "$q3_profit"]}},
-        {"$expr":{"$gt":["$q3_profit", "$q4_profit"]}}  ]}}]))
+        {"$expr":{"$gt":["$q3_profit", "$q4_profit"]}},{'q1_eps':{"$gte":2}},
+        {"volume":{"$gte":10000}} ]}}]))
         stocks = json.loads(stocks)
         count = len(stocks)
         ret_map = {
@@ -101,6 +102,37 @@ class BSESustainedProfitGain(Resource):
             "stocks": stocks
         }
         return jsonify(ret_map)
+
+class BSESustainedSalesGrowth(Resource):
+    def get(self):
+        stocks = dumps(db2.stockreposts.aggregate([{"$match":
+        {"$and" :[{"$expr":{"$gt":["$q1_revenue", "$q2_revenue"]}},
+        {"$expr":{"$gt":["$q2_revenue", "$q3_revenue"]}},
+        {"$expr":{"$gt":["$q3_revenue", "$q4_revenue"]}},{'q1_eps':{"$gte":1}},
+        {"volume":{"$gte":5000}} ]}}]))
+        stocks = json.loads(stocks)
+        count = len(stocks)
+        ret_map = {
+            "total":count,
+            "stocks": stocks
+        }
+        return jsonify(ret_map)
+
+class BSESustainedEPSGrowth(Resource):
+    def get(self):
+        stocks = dumps(db2.stockreposts.aggregate([{"$match":
+        {"$and" :[{"$expr":{"$gt":["$q1_eps", "$q2_eps"]}},
+        {"$expr":{"$gt":["$q2_eps", "$q3_eps"]}},
+        {"$expr":{"$gt":["$q3_eps", "$q4_eps"]}},{'q1_eps':{"$gte":0}},
+        {"volume":{"$gte":5000}} ]}}]))
+        stocks = json.loads(stocks)
+        count = len(stocks)
+        ret_map = {
+            "total":count,
+            "stocks": stocks
+        }
+        return jsonify(ret_map)
+
 
 class BSESustainedNPMGain(Resource):
     def get(self):
@@ -118,6 +150,8 @@ class BSESustainedNPMGain(Resource):
         return jsonify(ret_map)
 
 
+
+
 api.add_resource(TotalStocks, "/total")
 api.add_resource(MidCaps, "/mid_caps")
 api.add_resource(StockInfo,"/stock_info")
@@ -126,6 +160,8 @@ api.add_resource(QualityFilterSelectedField,"/quality_filter_selected")
 api.add_resource(StocksFromKyc,"/kyc_filter")
 api.add_resource(BSESustainedProfitGain,"/bse_sustained_profit_gain")
 api.add_resource(BSESustainedNPMGain,"/bse_sustained_npm_gain")
+api.add_resource(BSESustainedSalesGrowth,"/bse_sustained_sales_growth")
+api.add_resource(BSESustainedEPSGrowth,"/bse_sustained_eps_growth")
 
 if __name__=="__main__":
     app.run(host="0.0.0.0", debug=True)
