@@ -102,6 +102,21 @@ class BSESustainedProfitGain(Resource):
         }
         return jsonify(ret_map)
 
+class BSESustainedNPMGain(Resource):
+    def get(self):
+        stocks = dumps(db2.stockreposts.aggregate([{"$match":
+        {"$and" :[{"$expr":{"$gt":["$q1_npm", "$q2_npm"]}},
+        {"$expr":{"$gt":["$q2_npm", "$q3_npm"]}},
+        {"$expr":{"$gt":["$q3_npm", "$q4_npm"]}},
+        {"q1_npm":{"$gte":5}},{"volume":{"$gte":10000}}]}}]))
+        stocks = json.loads(stocks)
+        count = len(stocks)
+        ret_map = {
+            "total":count,
+            "stocks": stocks
+        }
+        return jsonify(ret_map)
+
 
 api.add_resource(TotalStocks, "/total")
 api.add_resource(MidCaps, "/mid_caps")
@@ -110,6 +125,7 @@ api.add_resource(QualityFilter,"/quality_filter")
 api.add_resource(QualityFilterSelectedField,"/quality_filter_selected")
 api.add_resource(StocksFromKyc,"/kyc_filter")
 api.add_resource(BSESustainedProfitGain,"/bse_sustained_profit_gain")
+api.add_resource(BSESustainedNPMGain,"/bse_sustained_npm_gain")
 
 if __name__=="__main__":
     app.run(host="0.0.0.0", debug=True)
